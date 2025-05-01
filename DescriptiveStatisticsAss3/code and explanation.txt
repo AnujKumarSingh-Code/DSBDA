@@ -1,0 +1,512 @@
+https://colab.research.google.com/drive/1TID7yd98fWokGGARU7sbw1bZtsxDqrFX#scrollTo=e2-wKUXQFRPc
+
+
+
+import pandas as pd
+import numpy as np
+
+# ── Part 1: Summary statistics grouped by a categorical variable ─────────────
+
+# 1. Load your dataset
+df = pd.read_csv('data.csv')           # replace with your filename
+cat_col = 'Profession'             # replace with your categorical column name
+num_col = 'Work Experience'              # replace with your numeric column name
+
+# 2. Compute grouped summary statistics
+grouped = df.groupby(cat_col)[num_col]
+summary = grouped.agg(['mean','median','min','max','std'])
+print("Grouped summary statistics:")
+print(summary, "\n")
+
+# 3. Create a list of summary‐stat values for each category
+#    (this will be a list of [mean, median, min, max, std] for each group)
+summary_list = summary.values.tolist()
+print("Summary stats as list of lists:")
+print(summary_list, "\n")
+
+
+# ── Part 2: Iris dataset descriptive statistics by species ────────────────────
+
+# Option A: if you have iris.csv with a 'species' column
+iris = pd.read_csv('iris.csv')         # ensure it has columns: sepal_length, sepal_width, petal_length, petal_width, species
+
+# Option B (alternative): use seaborn's built-in dataset
+# import seaborn as sns
+# iris = sns.load_dataset('iris')
+
+# 1. Group by species and get full describe (includes 25%, 50%, 75%, mean, std, etc.)
+iris_stats = iris.groupby('species').describe()
+print("Iris descriptive statistics by species:")
+print(iris_stats)
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------Mean , Median , Mode using formulas ----------------------------------------
+
+
+
+# import pandas as pd
+# import numpy as np
+
+# # ── Part 1: Summary statistics grouped by a categorical variable ────────────
+
+# # 1. Load your dataset
+# df = pd.read_csv('data.csv')           # replace with your filename
+# cat_col = 'Profession'             # replace with your categorical column name
+# num_col = 'Work Experience'              # replace with your numeric column name
+
+# # 2. Compute grouped summary statistics
+# grouped = df.groupby(cat_col)[num_col]
+# summary = grouped.agg(['mean','median','min','max','std'])
+# print("Grouped summary statistics:")
+# print(summary, "\n")
+
+# # 3. Create a list of summary‐stat values for each category
+# #    (this will be a list of [mean, median, min, max, std] for each group)
+# summary_list = summary.values.tolist()
+# print("Summary stats as list of lists:")
+# print(summary_list, "\n")
+
+
+# # ── Part 2: Iris dataset descriptive statistics by species ────────────────────
+
+# # Option A: if you have iris.csv with a 'species' column
+# iris = pd.read_csv('iris.csv')         # ensure it has columns: sepal_length, sepal_width, petal_length, petal_width, species
+
+# # Option B (alternative): use seaborn's built-in dataset
+# # import seaborn as sns
+# # iris = sns.load_dataset('iris')
+
+# # 1. Group by species and get full describe (includes 25%, 50%, 75%, mean, std, etc.)
+# iris_stats = iris.groupby('species').describe()
+# print("Iris descriptive statistics by species:")
+# print(iris_stats)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+
+# Load dataset
+df = pd.read_csv('data.csv')  # replace with your actual file
+cat_col = 'Profession'        # categorical column
+num_col = 'Work Experience'   # numeric column
+
+# Initialize dictionary to store computed stats
+manual_summary = {}
+
+# Loop through each category
+for group, data in df.groupby(cat_col):
+    values = data[num_col].dropna()
+    
+    mean = np.sum(values) / len(values)
+    median = np.median(values)
+    mode = values.mode().iloc[0] if not values.mode().empty else np.nan
+    minimum = np.min(values)
+    maximum = np.max(values)
+    std = np.sqrt(np.sum((values - mean)**2) / (len(values) - 1))  # sample std deviation
+
+    manual_summary[group] = {
+        'mean': mean,
+        'median': median,
+        'mode': mode,
+        'min': minimum,
+        'max': maximum,
+        'std': std
+    }
+
+# Convert dictionary to DataFrame
+manual_summary_df = pd.DataFrame.from_dict(manual_summary, orient='index')
+print("Manually computed summary statistics:")
+print(manual_summary_df)
+
+
+
+
+
+
+# Load iris dataset
+iris = pd.read_csv('iris.csv')
+
+# List of numeric columns
+numeric_cols = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
+
+# Group by species and calculate stats manually
+iris_manual_stats = {}
+
+for species, data in iris.groupby('species'):
+    stats = {}
+    for col in numeric_cols:
+        values = data[col].dropna()
+        mean = np.sum(values) / len(values)
+        median = np.median(values)
+        mode = values.mode().iloc[0] if not values.mode().empty else np.nan
+        std = np.sqrt(np.sum((values - mean)**2) / (len(values) - 1))  # sample std
+        stats[col] = {
+            'mean': mean,
+            'median': median,
+            'mode': mode,
+            'std': std
+        }
+    iris_manual_stats[species] = stats
+
+# Print manually computed stats
+for species, stats in iris_manual_stats.items():
+    print(f"\nStatistics for {species}:")
+    for feature, vals in stats.items():
+        print(f"  {feature}: mean={vals['mean']:.2f}, median={vals['median']:.2f}, mode={vals['mode']:.2f}, std={vals['std']:.2f}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+import pandas as pd
+import numpy as np
+
+# ── Part 1: Summary statistics grouped by a categorical variable ────────────
+
+# 1. Load your dataset
+df = pd.read_csv('data.csv')           # replace with your filename
+cat_col = 'Profession'             # replace with your categorical column name
+num_col = 'Work Experience'              # replace with your numeric column name
+
+# 2. Compute grouped summary statistics
+grouped = df.groupby(cat_col)[num_col]
+summary = grouped.agg(['mean','median','min','max','std'])
+print("Grouped summary statistics:")
+print(summary, "\n")
+
+# 3. Create a list of summary‐stat values for each category
+#    (this will be a list of [mean, median, min, max, std] for each group)
+summary_list = summary.values.tolist()
+print("Summary stats as list of lists:")
+print(summary_list, "\n")
+
+
+# ── Part 2: Iris dataset descriptive statistics by species ────────────────────
+
+# Option A: if you have iris.csv with a 'species' column
+iris = pd.read_csv('iris.csv')         # ensure it has columns: sepal_length, sepal_width, petal_length, petal_width, species
+
+# Option B (alternative): use seaborn's built-in dataset
+# import seaborn as sns
+# iris = sns.load_dataset('iris')
+
+# 1. Group by species and get full describe (includes 25%, 50%, 75%, mean, std, etc.)
+# iris_stats = iris.groupby('species').describe()
+# print("Iris descriptive statistics by species:")
+# print(iris_stats)
+x = iris.groupby('species')
+percentile_25 = lambda x: x.quantile(0.25)
+summ = x.agg(['mean' , 'median' , 'min' , 'max', percentile_25]);
+print(summ)
+
+
+
+
+
+
+
+
+
+
+# import pandas as pd
+# import numpy as np
+
+# df = pd.read_csv('data.csv')
+
+# cat_col = 'Profession'
+# num_col = 'Work Experience'
+
+# grouped = df.groupby(cat_col)[num_col]
+
+# summary = grouped.agg(['mean' , 'median' , 'min' , 'max' , 'std' ])
+# print(summary)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import pandas as pd
+# import numpy as np
+
+# # Load dataset
+# df = pd.read_csv('data.csv')  # replace with your actual file
+# cat_col = 'Profession'        # categorical column
+# num_col = 'Work Experience'   # numeric column
+
+# # Initialize dictionary to store computed stats
+# manual_summary = {}
+
+# # Loop through each category
+# for group, data in df.groupby(cat_col):
+#     values = data[num_col].dropna()
+    
+#     mean = np.sum(values) / len(values)
+#     median = np.median(values)
+#     mode = values.mode().iloc[0] if not values.mode().empty else np.nan
+#     minimum = np.min(values)
+#     maximum = np.max(values)
+#     std = np.sqrt(np.sum((values - mean)**2) / (len(values) - 1))  # sample std deviation
+
+#     manual_summary[group] = {
+#         'mean': mean,
+#         'median': median,
+#         'mode': mode,
+#         'min': minimum,
+#         'max': maximum,
+#         'std': std
+#     }
+
+# # Convert dictionary to DataFrame
+# manual_summary_df = pd.DataFrame.from_dict(manual_summary, orient='index')
+# print("Manually computed summary statistics:")
+# print(manual_summary_df)
+
+
+
+
+
+
+# # Load iris dataset
+# iris = pd.read_csv('iris.csv')
+
+# # List of numeric columns
+# numeric_cols = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
+
+# # Group by species and calculate stats manually
+# iris_manual_stats = {}
+
+# for species, data in iris.groupby('species'):
+#     stats = {}
+#     for col in numeric_cols:
+#         values = data[col].dropna()
+#         mean = np.sum(values) / len(values)
+#         median = np.median(values)
+#         mode = values.mode().iloc[0] if not values.mode().empty else np.nan
+#         std = np.sqrt(np.sum((values - mean)**2) / (len(values) - 1))  # sample std
+#         stats[col] = {
+#             'mean': mean,
+#             'median': median,
+#             'mode': mode,
+#             'std': std
+#         }
+#     iris_manual_stats[species] = stats
+
+# # Print manually computed stats
+# for species, stats in iris_manual_stats.items():
+#     print(f"\nStatistics for {species}:")
+#     for feature, vals in stats.items():
+#         print(f"  {feature}: mean={vals['mean']:.2f}, median={vals['median']:.2f}, mode={vals['mode']:.2f}, std={vals['std']:.2f}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+Below is a detailed, line-by-line explanation of the two‐part script:
+
+```python
+import pandas as pd
+import numpy as np
+```
+- **`import pandas as pd`**  
+  Brings in the pandas library under the alias `pd`—your go-to for table-like data (DataFrames).  
+- **`import numpy as np`**  
+  Imports NumPy under the alias `np`—useful for numeric operations, arrays, and mathematical functions.
+
+---
+
+### Part 1: Summary statistics grouped by a categorical variable
+
+```python
+df = pd.read_csv('data.csv')           # replace with your filename
+```
+- Reads the CSV file named `data.csv` from disk into a pandas DataFrame called `df`.
+
+```python
+cat_col = 'CategoryColumn'             # replace with your categorical column name
+num_col = 'NumericColumn'              # replace with your numeric column name
+```
+- Sets two Python variables:
+  - `cat_col` is the name of your **grouping** (qualitative) column (e.g. age group, region).  
+  - `num_col` is the name of the **measured** (quantitative) column (e.g. income, score) you want stats on.
+
+```python
+grouped = df.groupby(cat_col)[num_col]
+```
+- **`df.groupby(cat_col)`**  
+  Splits `df` into separate groups based on unique values in the `cat_col` column.  
+- **`[num_col]`**  
+  Selects just the numeric column within each group, so you get a “SeriesGroupBy” object ready for aggregation.
+
+```python
+summary = grouped.agg(['mean','median','min','max','std'])
+```
+- **`.agg([...])`**  
+  Applies multiple aggregate functions at once to each group’s numeric data:  
+  - **`mean`**: average  
+  - **`median`**: middle value  
+  - **`min`** / **`max`**: extremes  
+  - **`std`**: standard deviation  
+
+  The result is a new DataFrame `summary` whose rows are the categories and columns are these five statistics.
+
+```python
+print("Grouped summary statistics:")
+print(summary, "\n")
+```
+- Prints a header line followed by the `summary` table, showing each category’s mean, median, min, max, and std.
+
+```python
+summary_list = summary.values.tolist()
+```
+- **`summary.values`** extracts the raw NumPy array of shape `(n_groups, 5)`.  
+- **`.tolist()`** turns that into a nested Python list `[[mean, median, …], …]`, which can be useful for JSON output, further Python processing, or simple display.
+
+```python
+print("Summary stats as list of lists:")
+print(summary_list, "\n")
+```
+- Prints your list-of-lists representation of the same grouped statistics.
+
+---
+
+### Part 2: Iris dataset descriptive statistics by species
+
+```python
+iris = pd.read_csv('iris.csv')
+```
+- Loads `iris.csv` (which must have columns like `sepal_length`, `sepal_width`, `petal_length`, `petal_width`, `species`) into a DataFrame named `iris`.
+
+> *Alternative:* you could load the same data via  
+> ```python
+> import seaborn as sns
+> iris = sns.load_dataset('iris')
+> ```
+> if you have seaborn installed and prefer not to download the CSV.
+
+```python
+iris_stats = iris.groupby('species').describe()
+```
+- **`iris.groupby('species')`**  
+  Splits the rows by each unique flower species: `setosa`, `versicolor`, `virginica`.  
+- **`.describe()`**  
+  On each group, generates a full descriptive‐stats table for *all* numeric columns:
+  - **count**, **mean**, **std**  
+  - **min**, **25%**, **50%**, **75%**, **max**  
+  It returns a multi-level DataFrame indexed first by species, then by statistic.
+
+```python
+print("Iris descriptive statistics by species:")
+print(iris_stats)
+```
+- Prints a header and then the `iris_stats` DataFrame, so you can compare sepal and petal measurements across the three species.
+
+---
+
+**In sum**, this script shows you how to:
+
+1. **Group** any dataset by a categorical column and compute key summary stats on a numeric column.  
+2. **Convert** those grouped stats into a plain Python list of lists.  
+3. **Load** the classic Iris dataset and produce a rich set of descriptive statistics for each species in one shot.

@@ -1,0 +1,211 @@
+https://colab.research.google.com/drive/1Yw11U7JSxLIYBMtplG4mBORHQ6_dY6IN#scrollTo=dIim26MKCnyE
+
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import PowerTransformer
+
+# 1. Load the dataset
+#    Make sure 'weight-height.csv' is in your working directory
+df = pd.read_csv('weight-height.csv')
+# Expected columns: ['Index','Height(Inches)','Weight(Pounds)']
+
+# 1️⃣ Scan & handle missing values
+print("Missing values before:\n", df.isnull().sum(), "\n")
+# — here we’ll simply drop any rows with missing data
+df = df.dropna()
+print("Missing values after:\n", df.isnull().sum(), "\n")
+
+# 2️⃣ Detect & handle outliers (IQR clipping) on numeric columns
+num_cols = ['Height(Inches)', 'Weight(Pounds)']
+for col in num_cols:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower, upper = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
+    df[col] = df[col].clip(lower, upper)
+
+# 3️⃣ Transform one variable to reduce skew / normalize
+#    Let’s apply a Yeo–Johnson power transform to Weight
+pt = PowerTransformer(method='yeo-johnson', standardize=True)
+df['Weight_transformed'] = pt.fit_transform(df[['Weight(Pounds)']])
+
+# 4️⃣ Quick checks
+print("Post-processing summary:\n", df.describe())
+```
+
+**What this does:**
+1. **Loads** the CSV into a DataFrame.  
+2. **Drops** any rows with missing values.  
+3. **Clips** outliers in height and weight using the IQR rule (values beyond ±1.5·IQR are set to the fence).  
+4. **Transforms** the weight distribution via a Yeo–Johnson power transform (handles zeros and negatives, then standardizes to mean=0, std=1), giving you `Weight_transformed` for modeling or analysis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Below is a line-by-line walkthrough of what each statement does:
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import PowerTransformer
+```
+- **`import pandas as pd`**  
+  Loads the pandas library for tabular data operations under the alias `pd`.  
+- **`import numpy as np`**  
+  Loads NumPy for numerical computing under the alias `np`.  
+- **`from sklearn.preprocessing import PowerTransformer`**  
+  Imports the `PowerTransformer` class from scikit-learn, which we’ll use to normalize skewed distributions.
+
+---
+
+```python
+# 1. Load the dataset
+#    Make sure 'weight-height.csv' is in your working directory
+df = pd.read_csv('weight-height.csv')
+# Expected columns: ['Index','Height(Inches)','Weight(Pounds)']
+```
+- **`pd.read_csv('weight-height.csv')`**  
+  Reads the CSV file into a pandas DataFrame.  
+- **`df = …`**  
+  Saves that DataFrame in the variable `df`, which now holds all rows and columns from the file.
+
+---
+
+```python
+# 1️⃣ Scan & handle missing values
+print("Missing values before:\n", df.isnull().sum(), "\n")
+```
+- **`df.isnull()`**  
+  Returns a DataFrame of the same shape with `True` where values are `NaN`.  
+- **`.sum()`**  
+  Counts `True` per column, giving you the number of missing entries in each field.  
+- **`print(...)`**  
+  Shows you those counts before any cleaning.
+
+---
+
+```python
+# — here we’ll simply drop any rows with missing data
+df = df.dropna()
+```
+- **`df.dropna()`**  
+  Returns a new DataFrame with any row containing at least one `NaN` removed.  
+- **`df = …`**  
+  Reassigns `df` to that “cleaned” version without missing-value rows.
+
+---
+
+```python
+print("Missing values after:\n", df.isnull().sum(), "\n")
+```
+- Re-runs the missing-value check to confirm that all `NaN`s are gone.
+
+---
+
+```python
+# 2️⃣ Detect & handle outliers (IQR clipping) on numeric columns
+num_cols = ['Height(Inches)', 'Weight(Pounds)']
+```
+- **`num_cols = [...]`**  
+  Defines a list of the two numeric columns we’ll examine for outliers.
+
+---
+
+```python
+for col in num_cols:
+```
+- Starts a loop over each column name in `num_cols`.
+
+---
+
+```python
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+```
+- **`df[col].quantile(0.25)`** → **`Q1`**  
+  Computes the 25th percentile (first quartile).  
+- **`df[col].quantile(0.75)`** → **`Q3`**  
+  Computes the 75th percentile (third quartile).
+
+---
+
+```python
+    IQR = Q3 - Q1
+```
+- Calculates the **interquartile range**, i.e. the spread of the middle 50% of values.
+
+---
+
+```python
+    lower, upper = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
+```
+- Defines the conventional **outlier “fences”**:  
+  - Anything below `Q1 − 1.5·IQR` or above `Q3 + 1.5·IQR` is considered an outlier.
+
+---
+
+```python
+    df[col] = df[col].clip(lower, upper)
+```
+- **`df[col].clip(lower, upper)`**  
+  Replaces values below `lower` with `lower`, and above `upper` with `upper`.  
+- Assigns that back into `df[col]`, effectively “squashing” extreme outliers into the fence limits.
+
+---
+
+```python
+# 3️⃣ Transform one variable to reduce skew / normalize
+#    Let’s apply a Yeo–Johnson power transform to Weight
+pt = PowerTransformer(method='yeo-johnson', standardize=True)
+```
+- **`PowerTransformer(...)`**  
+  Instantiates a transformer that will choose an optimal power (Yeo–Johnson) to make data more Gaussian.  
+- **`standardize=True`**  
+  Tells it to also zero-center and scale to unit variance after the power transform.
+
+---
+
+```python
+df['Weight_transformed'] = pt.fit_transform(df[['Weight(Pounds)']])
+```
+- **`df[['Weight(Pounds)']]`**  
+  Selects the Weight column as a 2D DataFrame, shape `(n_rows, 1)`.  
+- **`pt.fit_transform(...)`**  
+  1. **Fits**: finds the best exponent λ to normalize the distribution.  
+  2. **Transforms**: applies that power (and standardization) to every value.  
+  Returns a NumPy array of transformed values.  
+- **`df['Weight_transformed'] = …`**  
+  Saves the result in a new column called `Weight_transformed`.
+
+---
+
+```python
+# 4️⃣ Quick checks
+print("Post-processing summary:\n", df.describe())
+```
+- **`df.describe()`**  
+  Provides count, mean, std, min/max, and quartiles for all numeric columns—including your new transformed weight—so you can verify the effects of your cleaning and transformation.
+
+---
+
+**In summary**, this script:
+
+1. **Loads** the CSV data.  
+2. **Drops** rows with any missing values.  
+3. **Clips** numeric outliers to the [Q1–1.5·IQR, Q3+1.5·IQR] range.  
+4. **Applies** a Yeo–Johnson power transform (with standardization) to the weight column.  
+5. **Prints** summaries before and after so you can confirm each step’s effect.

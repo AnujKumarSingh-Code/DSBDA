@@ -1,0 +1,309 @@
+https://colab.research.google.com/drive/1DKmrqwA5r9bGjZt3aBVbrfaMckDof4wj#scrollTo=_rietB0E3_0Z
+
+
+
+# import pandas as pd
+# import numpy as np
+# from sklearn.model_selection import train_test_split
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+# # 1. Load the data
+# df = pd.read_csv('Social_Network_Ads.csv')  # make sure this CSV is in your working directory
+
+# # 2. Select features and target
+# X = df[['Age', 'EstimatedSalary']]
+# y = df['Purchased']
+
+# # 3. Split into train and test sets (75% train / 25% test)
+# X_train, X_test, y_train, y_test = train_test_split(
+#     X, y, test_size=0.25, random_state=42
+# )
+
+# # 4. Feature scaling (important for LR convergence)
+# scaler = StandardScaler()
+# X_train_scaled = scaler.fit_transform(X_train)
+# X_test_scaled  = scaler.transform(X_test)
+
+# # 5. Train the Logistic Regression model
+# model = LogisticRegression()
+# model.fit(X_train_scaled, y_train)
+
+# # 6. Predict on the test set
+# y_pred = model.predict(X_test_scaled)
+
+# # 7. Compute confusion matrix and basic metrics
+# cm = confusion_matrix(y_test, y_pred)
+# tn, fp, fn, tp = cm.ravel()
+
+# accuracy    = accuracy_score(y_test, y_pred)
+# error_rate  = 1 - accuracy
+# precision   = precision_score(y_test, y_pred)
+# recall      = recall_score(y_test, y_pred)
+
+# # 8. Display results
+# print("Confusion Matrix:\n", cm)
+# print(f"True Positives:  {tp}")
+# print(f"False Positives: {fp}")
+# print(f"True Negatives:  {tn}")
+# print(f"False Negatives: {fn}\n")
+
+# print(f"Accuracy:    {accuracy:.2f}")
+# print(f"Error rate:  {error_rate:.2f}")
+# print(f"Precision:   {precision:.2f}")
+# print(f"Recall:      {recall:.2f}")
+
+
+
+
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Load the data
+df = pd.read_csv('Social_Network_Ads.csv')
+
+# 2. Select features and target
+X = df[['Age', 'EstimatedSalary']]
+y = df['Purchased']
+
+# 3. Split into train/test
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
+
+# 4. Scale features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled  = scaler.transform(X_test)
+
+# 5. Train logistic regression
+model = LogisticRegression()
+model.fit(X_train_scaled, y_train)
+
+# 6. Predict
+y_pred = model.predict(X_test_scaled)
+
+# 7. Compute confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+tn, fp, fn, tp = cm.ravel()
+
+# 8. Plot confusion matrix
+plt.figure(figsize=(6,4))
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt='d',
+    cmap='YlGnBu',
+    xticklabels=['Not Purchased','Purchased'],
+    yticklabels=['Not Purchased','Purchased']
+)
+plt.xlabel('Predicted label')
+plt.ylabel('True label')
+plt.title('Confusion Matrix')
+plt.show()
+
+# 9. Print metrics
+print(f"TP: {tp}, FP: {fp}, TN: {tn}, FN: {fn}")
+print(f"Accuracy:  {accuracy_score(y_test, y_pred):.2f}")
+print(f"Error rate:{1-accuracy_score(y_test, y_pred):.2f}")
+print(f"Precision: {precision_score(y_test, y_pred):.2f}")
+print(f"Recall:    {recall_score(y_test, y_pred):.2f}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Here’s a detailed, line-by-line explanation of your script:
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+```
+1. **`import pandas as pd`**  
+   Brings in the **pandas** library (for tabular data manipulation) under the alias `pd`.
+
+2. **`import numpy as np`**  
+   Loads **NumPy** (numerical arrays & math functions) as `np`.
+
+3. **`from sklearn.model_selection import train_test_split`**  
+   Imports the helper that splits data into training and testing subsets.
+
+4. **`from sklearn.preprocessing import StandardScaler`**  
+   Imports the scaler that standardizes features to zero mean and unit variance.
+
+5. **`from sklearn.linear_model import LogisticRegression`**  
+   Brings in the logistic-regression estimator.
+
+6. **`from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score`**  
+   Imports functions to compute the confusion matrix and common classification metrics.
+
+---
+
+```python
+# 1. Load the data
+df = pd.read_csv('Social_Network_Ads.csv')
+```
+7. **`pd.read_csv(...)`** reads the CSV file into a pandas **DataFrame**.  
+8. We assign it to **`df`**, which now holds all rows and columns from `Social_Network_Ads.csv`.
+
+---
+
+```python
+# 2. Select features and target
+X = df[['Age', 'EstimatedSalary']]
+y = df['Purchased']
+```
+9. **`X = df[['Age', 'EstimatedSalary']]`**  
+   Creates a new DataFrame `X` containing only the predictor columns **Age** and **EstimatedSalary**.
+
+10. **`y = df['Purchased']`**  
+    Extracts the **Purchased** column (0 or 1) as a pandas **Series** `y`, our target variable.
+
+---
+
+```python
+# 3. Split into train and test sets (75% train / 25% test)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
+```
+11. **`train_test_split(X, y, test_size=0.25, random_state=42)`**  
+    - **`test_size=0.25`** reserves 25% of the data for testing, 75% for training.  
+    - **`random_state=42`** fixes the random seed so you get the same split every time.  
+12. Returns four objects:  
+    - `X_train`, `y_train` for fitting the model  
+    - `X_test`,  `y_test`  for evaluating its performance.
+
+---
+
+```python
+# 4. Feature scaling (important for LR convergence)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled  = scaler.transform(X_test)
+```
+13. **`scaler = StandardScaler()`**  
+    Instantiates a scaler that will compute each feature’s mean and standard deviation.
+
+14. **`scaler.fit_transform(X_train)`**  
+    - **`fit`**: computes the mean & std on **`X_train`**.  
+    - **`transform`**: subtracts the mean and divides by the std for each feature, returning a NumPy array.  
+    Stored in **`X_train_scaled`**.
+
+15. **`scaler.transform(X_test)`**  
+    Applies the *same* training-set statistics to **`X_test`** so both sets live on the same scale. Stored in **`X_test_scaled`**.
+
+---
+
+```python
+# 5. Train the Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train_scaled, y_train)
+```
+16. **`model = LogisticRegression()`**  
+    Creates a logistic-regression model object with default hyperparameters.
+
+17. **`model.fit(X_train_scaled, y_train)`**  
+    Trains the model by finding coefficients that best separate the two classes (Purchased = 0 vs. 1) on the scaled training data.
+
+---
+
+```python
+# 6. Predict on the test set
+y_pred = model.predict(X_test_scaled)
+```
+18. **`model.predict(X_test_scaled)`**  
+    Uses the trained model to predict class labels (0 or 1) for each example in the scaled test set.  
+19. The predictions are stored in **`y_pred`**.
+
+---
+
+```python
+# 7. Compute confusion matrix and basic metrics
+cm = confusion_matrix(y_test, y_pred)
+tn, fp, fn, tp = cm.ravel()
+```
+20. **`confusion_matrix(y_test, y_pred)`**  
+    Returns a 2×2 array:  
+    ```
+    [[TN, FP],
+     [FN, TP]]
+    ```  
+21. **`cm.ravel()`**  
+    Flattens that matrix into a 1-D array `[TN, FP, FN, TP]`, which we unpack into the variables `tn, fp, fn, tp`.
+
+```python
+accuracy    = accuracy_score(y_test, y_pred)
+error_rate  = 1 - accuracy
+precision   = precision_score(y_test, y_pred)
+recall      = recall_score(y_test, y_pred)
+```
+22. **`accuracy_score`** computes `(TP + TN) / (Total samples)`.  
+23. **`error_rate = 1 - accuracy`** gives the proportion of misclassifications.  
+24. **`precision_score`** computes `TP / (TP + FP)`: of all predicted “1”s, how many were correct.  
+25. **`recall_score`** computes `TP / (TP + FN)`: of all true “1”s, how many did we correctly identify.
+
+---
+
+```python
+# 8. Display results
+print("Confusion Matrix:\n", cm)
+print(f"True Positives:  {tp}")
+print(f"False Positives: {fp}")
+print(f"True Negatives:  {tn}")
+print(f"False Negatives: {fn}\n")
+
+print(f"Accuracy:    {accuracy:.2f}")
+print(f"Error rate:  {error_rate:.2f}")
+print(f"Precision:   {precision:.2f}")
+print(f"Recall:      {recall:.2f}")
+```
+26. **`print("Confusion Matrix:\n", cm)`**  
+    Shows the raw 2×2 confusion matrix.
+
+27–30. **`print(f"...")`**  
+    Nicely formats and displays:
+    - **TP, FP, TN, FN** counts  
+    - **Accuracy**, **Error rate**, **Precision**, and **Recall**, each rounded to two decimals.
+
+---
+
+**Flow recap:**  
+1. **Import** libraries  
+2. **Load** data  
+3. **Select** predictors (Age, EstimatedSalary) and label (Purchased)  
+4. **Split** into train/test sets  
+5. **Scale** features  
+6. **Fit** a logistic regression  
+7. **Predict** on held-out data  
+8. **Compute** and **display** the confusion matrix and performance metrics.

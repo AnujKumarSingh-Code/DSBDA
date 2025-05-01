@@ -1,0 +1,149 @@
+https://colab.research.google.com/drive/10THIIWMHtQWwi1h1d-h8BvfSVy7PlqcC?usp=sharing
+
+
+
+import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the inbuilt Titanic dataset
+df = sns.load_dataset('titanic')
+
+# Plot boxplot for age distribution by sex and survival status
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=df, x='sex', y='age', hue='survived', palette='Set2')
+
+plt.title('Age Distribution by Gender and Survival')
+plt.xlabel('Gender')
+plt.ylabel('Age')
+plt.legend(title='Survived', labels=['No', 'Yes'])
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load dataset from CSV (make sure 'titanic.csv' is in your working directory)
+df = pd.read_csv('train.csv')
+
+# Convert 'Sex' and 'Survived' to lowercase column names (optional if inconsistent)
+df.rename(columns={'Sex': 'sex', 'Survived': 'survived', 'Age': 'age'}, inplace=True)
+
+# Drop rows with missing 'age' values (optional, but prevents errors)
+df = df.dropna(subset=['age'])
+
+# Plot boxplot
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=df, x='sex', y='age', hue='survived', palette='Set1')
+
+plt.title('Age Distribution by Gender and Survival (from CSV)')
+plt.xlabel('Gender')
+plt.ylabel('Age')
+plt.legend(title='Survived', labels=['No', 'Yes'])
+plt.grid(True)
+plt.show()
+
+
+
+print("✍️ Observations / Inference:")
+print("- Females who survived had lower median ages than those who didn't.")
+print("- Males had a wider age range, and many young males did not survive.")
+print("- Overall, females had a higher survival rate than males in most age groups.")
+print("- Outliers (dots) show rare cases — e.g., very old people who survived or didn't.")
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Sure! Let's break down **both versions** of the code from your assignment (inbuilt Titanic dataset and CSV file with `pd.read_csv`) for **Data Visualization II**, and then explain every part clearly.
+
+---
+
+### 🎯 **Goal:**
+- Plot a **box plot** showing **age distribution** for each **gender** (`sex`) and **survival status** (`survived`) using the Titanic dataset.
+
+---
+
+## ✅ Option 1: Using the **inbuilt Titanic dataset** (`seaborn`)
+
+### ✔️ Code:
+```python
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load the inbuilt Titanic dataset
+df = sns.load_dataset('titanic')
+
+# Create a box plot of age distribution grouped by gender and survival
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='sex', y='age', hue='survived', data=df)
+plt.title("Age Distribution by Gender and Survival Status")
+plt.xlabel("Gender")
+plt.ylabel("Age")
+plt.legend(title='Survived', labels=['No', 'Yes'])  # 0 = No, 1 = Yes
+plt.show()
+```
+
+### 🧠 **Explanation:**
+| Line | Purpose |
+|------|---------|
+| `import seaborn...` | Imports libraries for data visualization. |
+| `df = sns.load_dataset('titanic')` | Loads Titanic dataset from seaborn. |
+| `plt.figure(figsize=(10, 6))` | Sets the figure size for better visibility. |
+| `sns.boxplot(...)` | Plots a boxplot with: <br> - `x='sex'`: categories on x-axis (male/female) <br> - `y='age'`: numerical data <br> - `hue='survived'`: separate box for survived vs not survived. |
+| `plt.title`, `xlabel`, etc. | Label the plot for clarity. |
+| `plt.legend(...)` | Renames legend labels from 0/1 to No/Yes. |
+
+---
+
+## ✅ Option 2: Using your **CSV file** (`pd.read_csv()`)
+
+### ✔️ Code:
+```python
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load the Titanic dataset from your CSV file
+df = pd.read_csv("titanic.csv")  # Replace with your actual path
+
+# Handle missing values (drop rows with missing 'age' or 'sex')
+df = df.dropna(subset=['Age', 'Sex'])
+
+# Create the box plot
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='Sex', y='Age', hue='Survived', data=df)
+plt.title("Age Distribution by Gender and Survival Status")
+plt.xlabel("Gender")
+plt.ylabel("Age")
+plt.legend(title='Survived', labels=['No', 'Yes'])
+plt.show()
+```
+
+### 🧠 **Explanation:**
+| Line | Purpose |
+|------|---------|
+| `pd.read_csv("titanic.csv")` | Reads Titanic data from your file (from Excel). |
+| `dropna(...)` | Ensures we only use rows with valid `Age` and `Sex` for boxplot. |
+| The rest | Exactly same as seaborn version, just using a different data source.
+
+---
+
+## 📌 Box Plot Interpretation
+
+- **Box**: Shows median (middle line), Q1–Q3 range.
+- **Whiskers**: Spread of most data.
+- **Dots**: Outliers (e.g. very old passengers).
+- **Hue (`Survived`)**: Compares distributions between survived (1) and not survived (0).
+
+---
+
+Would you like me to also write the Colab markdown + code blocks together for you to copy-paste?

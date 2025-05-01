@@ -1,0 +1,294 @@
+https://colab.research.google.com/drive/1bdjCwHtIVDGG3i_WYK4junm2rwCVNUEo#scrollTo=4GcCXeNC5cbf
+
+
+
+
+
+# import pandas as pd
+# from sklearn.model_selection import train_test_split
+# from sklearn.naive_bayes import GaussianNB
+# from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+# # 1. Load the iris dataset from CSV
+# iris = pd.read_csv('iris.csv')  # make sure iris.csv is in your working directory
+
+# # 2. Split into features (X) and target (y)
+# X = iris.drop('species', axis=1)
+# y = iris['species']
+
+# # 3. Hold out 30% of the data for testing
+# X_train, X_test, y_train, y_test = train_test_split(
+#     X, y, test_size=0.30, random_state=0
+# )
+
+# # 4. Train a Gaussian Naive Bayes classifier
+# model = GaussianNB()
+# model.fit(X_train, y_train)
+
+# # 5. Use the model to predict labels for the test set
+# y_pred = model.predict(X_test)
+
+# # 6. Compute the 3×3 confusion matrix
+# cm = confusion_matrix(y_test, y_pred, labels=model.classes_)
+# print("Confusion Matrix:")
+# print(pd.DataFrame(cm,
+#                    index=[f"True {c}" for c in model.classes_],
+#                    columns=[f"Pred {c}" for c in model.classes_]),
+#       "\n")
+
+# # 7. Extract TP, FP, TN, FN for each class
+# for idx, cls in enumerate(model.classes_):
+#     tp = cm[idx, idx]
+#     fp = cm[:, idx].sum() - tp
+#     fn = cm[idx, :].sum() - tp
+#     tn = cm.sum() - (tp + fp + fn)
+#     print(f"Class {cls}: TP={tp}, FP={fp}, TN={tn}, FN={fn}")
+
+# # 8. Compute overall metrics (macro‐averaged)
+# accuracy   = accuracy_score(y_test, y_pred)
+# error_rate = 1 - accuracy
+# precision  = precision_score(y_test, y_pred, average='macro')
+# recall     = recall_score(y_test, y_pred, average='macro')
+
+# print(f"\nAccuracy:    {accuracy:.2f}")
+# print(f"Error rate:  {error_rate:.2f}")
+# print(f"Precision:   {precision:.2f}")
+# print(f"Recall:      {recall:.2f}")
+
+
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Load the dataset
+df = pd.read_csv('iris.csv')  # ensure iris.csv is in your working directory
+
+# 2. Split into features (X) and target (y)
+X = df.drop('species', axis=1)
+y = df['species']
+
+# 3. Hold out 30% for testing
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.30, random_state=0
+)
+
+# 4. Train a Gaussian Naive Bayes classifier
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+# 5. Predict on the test set
+y_pred = model.predict(X_test)
+
+# 6. Compute the confusion matrix
+cm = confusion_matrix(y_test, y_pred, labels=model.classes_)
+
+# 7. Turn it into a labeled DataFrame for clean display
+cm_df = pd.DataFrame(
+    cm,
+    index=[f"True {c}" for c in model.classes_],
+    columns=[f"Pred {c}" for c in model.classes_]
+)
+print("Confusion Matrix:\n")
+print(cm_df, "\n")
+
+# 8. Plot a colorful heatmap of the confusion matrix
+plt.figure(figsize=(6, 4))
+sns.heatmap(
+    cm_df,
+    annot=True,
+    fmt='d',
+    cmap='Blues',
+    cbar=False
+)
+plt.title('Naive Bayes Confusion Matrix')
+plt.xlabel('Predicted Class')
+plt.ylabel('Actual Class')
+plt.tight_layout()
+plt.show()
+
+# 9. Compute TP, FP, TN, FN for each class
+print("Per-class counts:")
+for i, cls in enumerate(model.classes_):
+    tp = cm[i, i]
+    fp = cm[:, i].sum() - tp
+    fn = cm[i, :].sum() - tp
+    tn = cm.sum() - (tp + fp + fn)
+    print(f"  {cls} → TP={tp}, FP={fp}, TN={tn}, FN={fn}")
+
+# 10. Compute overall metrics (macro-averaged)
+accuracy   = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision  = precision_score(y_test, y_pred, average='macro')
+recall     = recall_score(y_test, y_pred, average='macro')
+
+print(f"\nOverall Accuracy:   {accuracy:.2f}")
+print(f"Overall Error Rate: {error_rate:.2f}")
+print(f"Macro Precision:    {precision:.2f}")
+print(f"Macro Recall:       {recall:.2f}")
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Here’s a detailed, line-by-line walkthrough of your Naïve Bayes script:
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+```
+1. **`import pandas as pd`**  
+   Loads pandas (for DataFrame operations) under the alias `pd`.  
+2. **`from sklearn.model_selection import train_test_split`**  
+   Imports the helper function to split data into random train and test subsets.  
+3. **`from sklearn.naive_bayes import GaussianNB`**  
+   Imports the Gaussian Naïve Bayes classifier (assumes features follow a normal distribution).  
+4. **`from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score`**  
+   Brings in tools to evaluate classification performance:  
+   - `confusion_matrix` for TP/FP/TN/FN counts  
+   - `accuracy_score`, `precision_score`, `recall_score` for summary metrics.
+
+---
+
+```python
+# 1. Load the iris dataset from CSV
+iris = pd.read_csv('iris.csv')  # make sure iris.csv is in your working directory
+```
+5. **`pd.read_csv('iris.csv')`**  
+   Reads `iris.csv` into a pandas DataFrame named `iris`.
+
+---
+
+```python
+# 2. Split into features (X) and target (y)
+X = iris.drop('species', axis=1)
+y = iris['species']
+```
+6. **`iris.drop('species', axis=1)`** → `X`  
+   Creates a DataFrame `X` containing all columns **except** `species` (the four numeric measurements).  
+7. **`iris['species']`** → `y`  
+   Extracts the `species` column as a Series `y`, which holds the true class labels.
+
+---
+
+```python
+# 3. Hold out 30% of the data for testing
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.30, random_state=0
+)
+```
+8. **`train_test_split(...)`**  
+   - **`test_size=0.30`** keeps 30% of samples for the test set.  
+   - **`random_state=0`** ensures the split is reproducible.  
+9. Returns four objects:  
+   - `X_train`, `y_train` for model training  
+   - `X_test`,  `y_test`  for performance evaluation.
+
+---
+
+```python
+# 4. Train a Gaussian Naive Bayes classifier
+model = GaussianNB()
+model.fit(X_train, y_train)
+```
+10. **`GaussianNB()`** → `model`  
+    Instantiates the Naïve Bayes classifier assuming Gaussian feature distributions.  
+11. **`model.fit(X_train, y_train)`**  
+    Learns each class’s feature‐wise mean and variance from the training data.
+
+---
+
+```python
+# 5. Use the model to predict labels for the test set
+y_pred = model.predict(X_test)
+```
+12. **`model.predict(X_test)`**  
+    Applies the learned distributions to compute posterior probabilities and picks the most likely class for each test sample.  
+13. **`y_pred`** holds those predicted species labels.
+
+---
+
+```python
+# 6. Compute the 3×3 confusion matrix
+cm = confusion_matrix(y_test, y_pred, labels=model.classes_)
+print("Confusion Matrix:")
+print(pd.DataFrame(cm,
+                   index=[f"True {c}" for c in model.classes_],
+                   columns=[f"Pred {c}" for c in model.classes_]),
+      "\n")
+```
+14. **`confusion_matrix(y_test, y_pred, labels=model.classes_)`**  
+    Builds a 3×3 array where  
+    - rows correspond to the true species  
+    - columns to the predicted species  
+    in the order given by `model.classes_` (e.g. `['Iris-setosa', …]`).  
+15. **`pd.DataFrame(cm, index=…, columns=…)`**  
+    Wraps the raw array in a DataFrame with human-readable row and column labels:  
+    - `"True Iris-setosa"`, `"True Iris-versicolor"`, …  
+    - `"Pred Iris-setosa"`, `"Pred Iris-versicolor"`, …  
+16. The `print` then displays that neatly formatted table.
+
+---
+
+```python
+# 7. Extract TP, FP, TN, FN for each class
+for idx, cls in enumerate(model.classes_):
+    tp = cm[idx, idx]
+    fp = cm[:, idx].sum() - tp
+    fn = cm[idx, :].sum() - tp
+    tn = cm.sum() - (tp + fp + fn)
+    print(f"Class {cls}: TP={tp}, FP={fp}, TN={tn}, FN={fn}")
+```
+17. **`for idx, cls in enumerate(model.classes_)`**  
+    Loops over each class index (`idx`) and name (`cls`).  
+18. **`tp = cm[idx, idx]`**  
+    True Positives: diagonal entry for that class.  
+19. **`fp = cm[:, idx].sum() - tp`**  
+    False Positives: sum of column `idx` minus the true positives.  
+20. **`fn = cm[idx, :].sum() - tp`**  
+    False Negatives: sum of row `idx` minus the true positives.  
+21. **`tn = cm.sum() - (tp + fp + fn)`**  
+    True Negatives: total samples minus the other three counts.  
+22. Prints the four counts for each species.
+
+---
+
+```python
+# 8. Compute overall metrics (macro‐averaged)
+accuracy   = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision  = precision_score(y_test, y_pred, average='macro')
+recall     = recall_score(y_test, y_pred, average='macro')
+
+print(f"\nAccuracy:    {accuracy:.2f}")
+print(f"Error rate:  {error_rate:.2f}")
+print(f"Precision:   {precision:.2f}")
+print(f"Recall:      {recall:.2f}")
+```
+23. **`accuracy_score(y_test, y_pred)`**  
+    Overall fraction of correctly classified samples (sum of all diagonal entries divided by total).  
+24. **`error_rate = 1 - accuracy`**  
+    Fraction of misclassifications.  
+25. **`precision_score(..., average='macro')`**  
+    Computes precision for each class individually, then averages them equally (macro-average).  
+26. **`recall_score(..., average='macro')`**  
+    Likewise for recall.  
+27. The final `print` statements show each metric rounded to two decimal places.
+
+---
+
+**Flow summary**  
+1. **Import** libraries  
+2. **Load** the Iris data  
+3. **Split** into training/test sets  
+4. **Fit** a Gaussian Naïve Bayes model  
+5. **Predict** on unseen data  
+6. **Build** and display a labeled confusion matrix  
+7. **Compute** TP/FP/TN/FN counts for each class  
+8. **Calculate** overall accuracy, error rate, precision, and recall (macro-averaged)  
+9. **Print** everything for a complete performance report.

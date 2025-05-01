@@ -1,0 +1,336 @@
+https://colab.research.google.com/drive/1iGPPHCnwu6FMpsabKJSTo6dE8ktz_yb0#scrollTo=rnvLr15Fn6hM
+
+
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import PowerTransformer
+
+# 1. Load the dataset
+df = pd.read_csv('academic_performance.csv')
+# Expected columns:
+# ['roll_no','gender','race_ethni','parental_level_of_education',
+#  'lunch','test_preparation_cours',
+#  'math_score','reading_score','writing_score','science_score',
+#  'total_score','grade']
+
+# 2. Ensure the score columns are numeric
+score_cols = ['math_score', 'reading_score', 'writing_score', 'science_score']
+df[score_cols] = df[score_cols].apply(pd.to_numeric, errors='coerce')
+
+# Optional: see how many non-numeric got coerced to NaN
+print("Non-numeric → NaN:\n", df[score_cols].isnull().sum(), "\n")
+
+# 3. Recompute total_score from the four subjects
+df['total_score'] = df[score_cols].sum(axis=1)
+
+# 4. Fill missing values
+#  4a. Numeric columns → median
+num_cols = score_cols + ['total_score']
+for col in num_cols:
+    df[col].fillna(df[col].median(), inplace=True)
+
+#  4b. Categorical columns → mode
+cat_cols = [
+    'roll_no','gender','race_ethni',
+    'parental_level_of_education','lunch',
+    'test_preparation_cours','grade'
+]
+for col in cat_cols:
+    df[col].fillna(df[col].mode()[0], inplace=True)
+
+print("Missing after fill:\n", df.isnull().sum(), "\n")
+
+# 5. Outlier handling via IQR clipping
+for col in num_cols:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower, upper = Q1 - 1.5*IQR, Q3 + 1.5*IQR
+    df[col] = df[col].clip(lower, upper)
+
+# 6. Transform total_score
+#  6a. Log transform to reduce skew
+df['total_score_log'] = np.log1p(df['total_score'])
+
+#  6b. Yeo-Johnson power transform to approximate normality
+pt = PowerTransformer(method='yeo-johnson', standardize=True)
+df['total_score_pt'] = pt.fit_transform(df[['total_score']])
+
+# 7. Quick final summary
+print("Head of processed DataFrame:\n", df.head(), "\n")
+print("Summary statistics:\n",
+      df[num_cols + ['total_score_log','total_score_pt']].describe())
+
+
+
+
+
+
+
+
+
+Explanation ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Below is a line-by-line explanation of the full script:
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import PowerTransformer
+```
+- **`import pandas as pd`**  
+  Loads pandas (the go-to library for tables) under the alias `pd`.  
+- **`import numpy as np`**  
+  Loads NumPy (numerical computing) under the alias `np`.  
+- **`from sklearn.preprocessing import PowerTransformer`**  
+  Imports scikit-learn’s `PowerTransformer`, which can learn a power (e.g. Yeo–Johnson) to make data more Gaussian.
+
+```python
+# 1. Load the dataset
+df = pd.read_csv('academic_performance.csv')
+```
+- **`pd.read_csv(...)`**  
+  Reads the CSV file on disk into a DataFrame.  
+- **`df = …`**  
+  Stores that table in the variable `df`.
+
+```python
+# Expected columns:
+# ['roll_no','gender','race_ethni','parental_level_of_education',
+#  'lunch','test_preparation_cours',
+#  'math_score','reading_score','writing_score','science_score',
+#  'total_score','grade']
+```
+- Just a comment listing what columns we expect in that CSV.
+
+```python
+# 2. Ensure the score columns are numeric
+score_cols = ['math_score', 'reading_score', 'writing_score', 'science_score']
+df[score_cols] = df[score_cols].apply(pd.to_numeric, errors='coerce')
+```
+- **`score_cols = [...]`**  
+  Defines a Python list of the four subject-score column names.  
+- **`df[score_cols].apply(pd.to_numeric, errors='coerce')`**  
+  Applies `pd.to_numeric` to each column:  
+  - Valid numbers stay numbers.  
+  - Bad values (e.g. strings) become `NaN`.  
+- **`df[score_cols] = …`**  
+  Replaces the original columns with their numeric versions.
+
+```python
+# Optional: see how many non-numeric got coerced to NaN
+print("Non-numeric → NaN:\n", df[score_cols].isnull().sum(), "\n")
+```
+- **`df[score_cols].isnull().sum()`**  
+  Counts `NaN` entries per score column, so you can see if any strings were coerced away.
+
+```python
+# 3. Recompute total_score from the four subjects
+df['total_score'] = df[score_cols].sum(axis=1)
+```
+- **`df[score_cols].sum(axis=1)`**  
+  Adds the four numeric columns row-by-row, producing each student’s total.  
+- **`df['total_score'] = …`**  
+  Stores that back into `total_score` (overwriting any existing).
+
+```python
+# 4. Fill missing values
+#  4a. Numeric columns → median
+num_cols = score_cols + ['total_score']
+for col in num_cols:
+    df[col].fillna(df[col].median(), inplace=True)
+```
+- **`num_cols = score_cols + ['total_score']`**  
+  Builds a list of all numeric columns to impute.  
+- **`for col in num_cols:`**  
+  Loops over each numeric column name.  
+- **`df[col].fillna(df[col].median(), inplace=True)`**  
+  Replaces any `NaN` in that column with its median value, modifying `df` in place.
+
+```python
+#  4b. Categorical columns → mode
+cat_cols = [
+    'roll_no','gender','race_ethni',
+    'parental_level_of_education','lunch',
+    'test_preparation_cours','grade'
+]
+for col in cat_cols:
+    df[col].fillna(df[col].mode()[0], inplace=True)
+```
+- **`cat_cols = [...]`**  
+  Lists all non-numeric (categorical/ID) columns.  
+- **`df[col].mode()[0]`**  
+  Finds the most frequent value in that column.  
+- **`.fillna(..., inplace=True)`**  
+  Uses that mode to fill any missing entries.
+
+```python
+print("Missing after fill:\n", df.isnull().sum(), "\n")
+```
+- Provides a final check that **all** columns now have zero missing values.
+
+```python
+# 5. Outlier handling via IQR clipping
+for col in num_cols:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower, upper = Q1 - 1.5*IQR, Q3 + 1.5*IQR
+    df[col] = df[col].clip(lower, upper)
+```
+- **`df[col].quantile(0.25/0.75)`**  
+  Finds the 25th and 75th percentiles (Q1, Q3).  
+- **`IQR = Q3 – Q1`**  
+  Interquartile range.  
+- **`lower/upper = Q1 – 1.5·IQR, Q3 + 1.5·IQR`**  
+  Standard “fences” for outlier detection.  
+- **`df[col].clip(lower, upper)`**  
+  Any values below `lower` get set to `lower`, above `upper` set to `upper`.
+
+```python
+# 6. Transform total_score
+#  6a. Log transform to reduce skew
+df['total_score_log'] = np.log1p(df['total_score'])
+```
+- **`np.log1p(...)`**  
+  Computes `log(1 + x)`, which handles zeros gracefully and shrinks large values to reduce right-skew.
+
+```python
+#  6b. Yeo-Johnson power transform to approximate normality
+pt = PowerTransformer(method='yeo-johnson', standardize=True)
+df['total_score_pt'] = pt.fit_transform(df[['total_score']])
+```
+- **`PowerTransformer(method='yeo-johnson', standardize=True)`**  
+  Creates a transformer that finds the best power to make data Gaussian, then scales to zero mean & unit variance.  
+- **`.fit_transform(...)`**  
+  Learns the power from your `total_score` column and applies it, returning a NumPy array you assign back into a new column.
+
+```python
+# 7. Quick final summary
+print("Head of processed DataFrame:\n", df.head(), "\n")
+print("Summary statistics:\n",
+      df[num_cols + ['total_score_log','total_score_pt']].describe())
+```
+- **`df.head()`**  
+  Shows the first five rows of your fully processed table.  
+- **`.describe()`** on your final numeric columns  
+  Prints count, mean, std, min/max and quartiles—so you can verify the effects of imputation, clipping, and transforms.
+
+---
+
+**In sum**, this script walks you through:
+
+1. **Reading** the data  
+2. **Ensuring** numeric columns are truly numeric  
+3. **Recalculating** your `total_score`  
+4. **Imputing** missing values  
+5. **Clipping** outliers  
+6. **Transforming** to reduce skew and normalize  
+7. **Summarizing** the clean, ready-to-model dataset.
+
+
+Here’s a clear, line-by-line breakdown of the IQR-clipping block:
+
+```python
+# 5. Outlier handling via IQR clipping
+for col in num_cols:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower, upper = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
+    df[col] = df[col].clip(lower, upper)
+```
+
+1. **`for col in num_cols:`**  
+   Loop over each numeric column you want to clean (e.g. `math_score`, `total_score`, etc.).
+
+2. **`Q1 = df[col].quantile(0.25)`**  
+   Compute the **first quartile** (25th percentile) of that column—i.e. the value below which 25% of the data fall.
+
+3. **`Q3 = df[col].quantile(0.75)`**  
+   Compute the **third quartile** (75th percentile)—the value below which 75% of the data fall.
+
+4. **`IQR = Q3 - Q1`**  
+   The **interquartile range**, which measures the spread of the middle 50% of your data.
+
+5. **`lower, upper = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR`**  
+   Define the conventional “fences” for outliers:  
+   - **Lower fence**: anything below `Q1 − 1.5·IQR` is unusually low.  
+   - **Upper fence**: anything above `Q3 + 1.5·IQR` is unusually high.
+
+6. **`df[col] = df[col].clip(lower, upper)`**  
+   **Clamp** every value in the column to that `[lower, upper]` range.  
+   - If a value is below `lower`, it becomes `lower`.  
+   - If it’s above `upper`, it becomes `upper`.  
+   - Otherwise it stays the same.
+
+---
+
+**Why use IQR clipping?**  
+- It’s a robust way to “squash” extreme outliers back to reasonable bounds, without completely dropping rows.  
+- By using 1.5 × IQR you target the most extreme ~1%–2% of values in a roughly normal distribution, preserving the bulk of your data’s natural variability.
+
+
+
+Let’s unpack each piece and dig into the “how” and “why” of the Yeo–Johnson step:
+
+```python
+pt = PowerTransformer(method='yeo-johnson', standardize=True)
+```
+
+1. **`PowerTransformer`**  
+   A scikit-learn class that implements both the Box–Cox and Yeo–Johnson family of power transforms, choosing a data-driven exponent to make your data as close to Gaussian (“bell-shaped”) as possible.
+
+2. **`method='yeo-johnson'`**  
+   - **Box–Cox** requires all positive data.  
+   - **Yeo–Johnson** extends Box–Cox to handle zeros and negatives too, via a piecewise formula:
+     \[
+       y(\lambda) = 
+       \begin{cases}
+         \frac{(x + 1)^\lambda - 1}{\lambda} & \lambda \neq 0,\, x \ge 0, \\
+         \ln(x + 1)                         & \lambda = 0,\, x \ge 0, \\
+         -\frac{(-x + 1)^{2 - \lambda} - 1}{2 - \lambda} & \lambda \neq 2,\, x < 0, \\
+         -\ln(-x + 1)                       & \lambda = 2,\, x < 0.
+       \end{cases}
+     \]
+   - By choosing Yeo–Johnson, we ensure our transform will work even if `total_score` ever contained zero or negative values (unlikely here, but a good general safeguard).
+
+3. **`standardize=True`**  
+   After finding the optimal exponent λ for each feature, the transformer will also **shift** and **scale** your data to have mean = 0 and variance = 1. This is handy because many downstream algorithms (e.g. PCA, k-means, regularized regression) assume standardized inputs.
+
+---
+
+```python
+df['total_score_pt'] = pt.fit_transform(df[['total_score']])
+```
+
+1. **Why `.fit_transform()` instead of `.fit()` + `.transform()`?**  
+   - **`.fit()`**: examines your data and **estimates λ** by maximizing the log-likelihood under a normality assumption.  
+   - **`.transform()`**: applies the learned formula (with that λ) to actually re-scale your data.  
+   - **`.fit_transform()`** does both in one step, returning the transformed array immediately.
+
+2. **Why `df[['total_score']]` (double brackets)?**  
+   - Scikit-learn always expects a 2-D array of shape `(n_samples, n_features)`.  
+   - `df[['total_score']]` gives you a **DataFrame** of shape `(n_rows, 1)`.  
+   - If you passed `df['total_score']` (a Series), you’d get shape `(n_rows,)` and scikit-learn would complain.
+
+3. **What you get back**  
+   - A NumPy array of shape `(n_rows, 1)`, where each entry is  
+     \[
+       \frac{\bigl(\text{total_score}+1\bigr)^{\hat\lambda} - 1}{\hat\lambda}
+       \quad\text{(or the piecewise equivalent if negative values)}, 
+     \]
+     **then** standardized to zero mean and unit variance.  
+   - By assigning it to `df['total_score_pt']`, pandas **broadcasts** that single‐column array into a new Series in your DataFrame.
+
+---
+
+### Why bother?
+
+- **Reduces skew**: raw score distributions often pile up toward 100 or 0; the power transform “stretches” the left tail and “compresses” the right tail to produce a more symmetric shape.
+- **Improves modeling**: many statistical tests and models perform best (or assume) roughly normal residuals or inputs.
+- **Handles zeros/negatives**: unlike plain log-transform, Yeo–Johnson never blows up at zero.
+
+After this step, `total_score_pt` is a standardized, approximately normal version of `total_score`, ready for any model or analysis that benefits from Gaussian-like inputs.

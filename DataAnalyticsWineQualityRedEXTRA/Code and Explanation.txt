@@ -1,0 +1,203 @@
+https://colab.research.google.com/drive/1TA38h-B4wXmdCD6tOtIW7IFnoWJone79#scrollTo=fj1EGcUT-0iF
+
+
+
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+# 1. Load the CSV (comma‐delimited)
+df = pd.read_csv('winequality-red.csv')  
+
+# 1a. Inspect the columns to be sure 'quality' is present
+print("Columns in the DataFrame:")
+print(df.columns.tolist(), "\n")
+
+# 2. Binarize quality: good (1) if quality ≥ 7, else bad (0)
+df['good'] = (df['quality'] >= 7).astype(int)
+
+# 3. Split into features X and target y
+X = df.drop(['quality', 'good'], axis=1)
+y = df['good']
+
+# 4. Train/test split (75% train / 25% test)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
+
+# 5. Scale features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled  = scaler.transform(X_test)
+
+# 6. Train logistic regression
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train_scaled, y_train)
+
+# 7. Predict on the test set
+y_pred = model.predict(X_test_scaled)
+
+# 8. Compute confusion matrix and unpack TP, FP, TN, FN
+cm = confusion_matrix(y_test, y_pred)
+tn, fp, fn, tp = cm.ravel()
+
+# 9. Calculate metrics
+accuracy   = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision  = precision_score(y_test, y_pred)
+recall     = recall_score(y_test, y_pred)
+
+# 10. Display results
+print("Confusion Matrix:\n", cm, "\n")
+print(f"TP: {tp}, FP: {fp}, TN: {tn}, FN: {fn}")
+print(f"Accuracy:    {accuracy:.2f}")
+print(f"Error rate:  {error_rate:.2f}")
+print(f"Precision:   {precision:.2f}")
+print(f"Recall:      {recall:.2f}")
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+Here’s what each line does:
+
+```python
+import pandas as pd
+```
+- Imports the **pandas** library (for loading and manipulating tabular data) under the alias `pd`.
+
+```python
+from sklearn.model_selection import train_test_split
+```
+- Brings in the `train_test_split` function, which randomly splits your dataset into training and testing subsets.
+
+```python
+from sklearn.preprocessing import StandardScaler
+```
+- Imports the **StandardScaler**, used to standardize features so they each have zero mean and unit variance.
+
+```python
+from sklearn.linear_model import LogisticRegression
+```
+- Loads the logistic‐regression estimator class—you’ll use this to fit a classifier.
+
+```python
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+```
+- Imports four evaluation functions:
+  - `confusion_matrix` to get TP/FP/TN/FN counts,
+  - `accuracy_score` for overall correctness,
+  - `precision_score` for TP/(TP+FP),
+  - `recall_score` for TP/(TP+FN).
+
+```python
+# 1. Load the CSV (comma‐delimited)
+df = pd.read_csv('winequality-red.csv')
+```
+- Reads the **winequality-red.csv** file into a pandas DataFrame named `df`.  
+- Uses the default comma separator, ensuring the `quality` column is correctly parsed.
+
+```python
+# 1a. Inspect the columns to be sure 'quality' is present
+print("Columns in the DataFrame:")
+print(df.columns.tolist(), "\n")
+```
+- Prints out the list of column names in `df`, so you can verify that `quality` (and all expected features) are loaded.
+
+```python
+# 2. Binarize quality: good (1) if quality ≥ 7, else bad (0)
+df['good'] = (df['quality'] >= 7).astype(int)
+```
+- Creates a new column `good`:
+  - Evaluates the boolean expression `df['quality'] >= 7` (True for “good” wines),
+  - Converts `True`/`False` into `1`/`0` via `.astype(int)`.
+
+```python
+# 3. Split into features X and target y
+X = df.drop(['quality', 'good'], axis=1)
+y = df['good']
+```
+- **`X`**: a DataFrame of all original chemical‐analysis features, dropping the original `quality` and your new `good` label.  
+- **`y`**: the Series of binary labels (`0` or `1`) that you want to predict.
+
+```python
+# 4. Train/test split (75% train / 25% test)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
+```
+- Randomly partitions `X` and `y` into:
+  - **Training set** (`X_train`, `y_train`) containing 75% of rows,
+  - **Test set** (`X_test`, `y_test`) containing 25%.  
+- `random_state=42` fixes the shuffle so you get the same split every run.
+
+```python
+# 5. Scale features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled  = scaler.transform(X_test)
+```
+1. **`StandardScaler()`**: instantiates the scaler.  
+2. **`scaler.fit_transform(X_train)`**:
+   - **`fit`** computes each feature’s mean and standard deviation on the training data,
+   - **`transform`** subtracts the mean and divides by the std, returning a NumPy array of scaled values.  
+3. **`scaler.transform(X_test)`**: applies the *same* transformation (using training stats) to the test set.
+
+```python
+# 6. Train logistic regression
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train_scaled, y_train)
+```
+- **`LogisticRegression(max_iter=1000)`**: creates the classifier and increases the iteration limit so it converges on all features.  
+- **`model.fit(...)`**: fits the model’s coefficients to best separate good vs. bad wines in the training data.
+
+```python
+# 7. Predict on the test set
+y_pred = model.predict(X_test_scaled)
+```
+- Applies the trained model to `X_test_scaled`, producing predicted labels (`0` or `1`) in `y_pred`.
+
+```python
+# 8. Compute confusion matrix and unpack TP, FP, TN, FN
+cm = confusion_matrix(y_test, y_pred)
+tn, fp, fn, tp = cm.ravel()
+```
+- **`confusion_matrix(y_test, y_pred)`** returns a 2×2 array:
+  ```
+  [[TN, FP],
+   [FN, TP]]
+  ```
+- **`.ravel()`** flattens it to `[TN, FP, FN, TP]`, which is unpacked into the four variables.
+
+```python
+# 9. Calculate metrics
+accuracy   = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision  = precision_score(y_test, y_pred)
+recall     = recall_score(y_test, y_pred)
+```
+- **`accuracy_score`**: fraction of all correct predictions.  
+- **`error_rate`**: simply `1 - accuracy`.  
+- **`precision_score`**: `TP / (TP + FP)`, i.e. of predicted “good” wines, how many truly were good.  
+- **`recall_score`**: `TP / (TP + FN)`, i.e. of actual good wines, how many you correctly identified.
+
+```python
+# 10. Display results
+print("Confusion Matrix:\n", cm, "\n")
+print(f"TP: {tp}, FP: {fp}, TN: {tn}, FN: {fn}")
+print(f"Accuracy:    {accuracy:.2f}")
+print(f"Error rate:  {error_rate:.2f}")
+print(f"Precision:   {precision:.2f}")
+print(f"Recall:      {recall:.2f}")
+```
+1. Prints the raw 2×2 confusion matrix array.  
+2. Prints each of TP, FP, TN, FN counts.  
+3. Prints the four performance metrics, formatted to two decimal places, so you can see how well the model distinguishes good vs. bad wines.

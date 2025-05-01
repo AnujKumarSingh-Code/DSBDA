@@ -1,0 +1,202 @@
+https://colab.research.google.com/drive/18ddhViwERP6BTlUn3vrMF9xiEVv_8NGO#scrollTo=B73GjjggIThZ
+
+
+
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import mean_squared_error, r2_score
+
+# 1. Load the CSV
+df = pd.read_csv('BostonHousing.csv')
+
+# 2. Split into features and target
+X = df.drop('medv', axis=1)
+y = df['medv']
+
+# 3. Impute missing values in X with the median
+imputer = SimpleImputer(strategy='median')
+X[:] = imputer.fit_transform(X)
+
+# 4. Train/test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# 5. Fit Linear Regression
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# 6. Predict & evaluate
+y_pred = model.predict(X_test)
+mse  = mean_squared_error(y_test, y_pred)         # default returns MSE
+rmse = np.sqrt(mse)                               # manually take square root
+r2   = r2_score(y_test, y_pred)
+
+print(f"Test RMSE: {rmse:.2f}")
+print(f"Test R²:   {r2:.2f}")
+
+# 7. (Optional) Feature coefficients
+coef_df = pd.DataFrame({
+    'feature': X.columns,
+    'coefficient': model.coef_
+}).sort_values('coefficient', ascending=False)
+
+print("\nFeature coefficients:")
+print(coef_df)
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+Here’s a detailed, line-by-line breakdown of the final script:
+
+```python
+import pandas as pd
+import numpy as np
+```
+- **`import pandas as pd`**  
+  Loads the pandas library (for DataFrame operations) under the alias `pd`.  
+- **`import numpy as np`**  
+  Loads NumPy (for numerical and array operations) under the alias `np`.  
+
+```python
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import mean_squared_error, r2_score
+```
+- **`train_test_split`**  
+  A utility to split arrays or DataFrames into random train & test subsets.  
+- **`LinearRegression`**  
+  The ordinary least-squares regression estimator.  
+- **`SimpleImputer`**  
+  Fills in missing values according to a chosen strategy (here, the median).  
+- **`mean_squared_error`, `r2_score`**  
+  Functions to measure model performance: MSE and coefficient of determination (R²).
+
+---
+
+```python
+# 1. Load the CSV
+df = pd.read_csv('/mnt/data/BostonHousing.csv')
+```
+- **`pd.read_csv(...)`**  
+  Reads the CSV file at the given path into a pandas DataFrame.  
+- **`df = …`**  
+  Assigns that DataFrame (all rows and columns) to the variable `df`.
+
+---
+
+```python
+# 2. Split into features and target
+X = df.drop('medv', axis=1)
+y = df['medv']
+```
+- **`df.drop('medv', axis=1)`**  
+  Creates a new DataFrame `X` by dropping the `medv` column (the target) along axis 1 (columns).  
+- **`df['medv']`**  
+  Extracts the `medv` column as a pandas Series `y`, which contains the median home values.
+
+---
+
+```python
+# 3. Impute missing values in X with the median
+imputer = SimpleImputer(strategy='median')
+X[:] = imputer.fit_transform(X)
+```
+1. **`SimpleImputer(strategy='median')`**  
+   Instantiates an imputer that will replace each feature’s missing entries with that feature’s median value.  
+2. **`imputer.fit_transform(X)`**  
+   - **`.fit()`**: computes the median of each column in `X`.  
+   - **`.transform()`**: fills any `NaN` in `X` with the corresponding column median.  
+   Returns a NumPy array of the imputed data.  
+3. **`X[:] = …`**  
+   Writes that array back into the `X` DataFrame in place, so every feature column is now fully populated.
+
+---
+
+```python
+# 4. Train/test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+```
+- **`train_test_split(X, y, test_size=0.2, random_state=42)`**  
+  Randomly shuffles and splits `X` and `y` into:
+  - **`X_train`, `y_train`**: 80% of the data (for training)  
+  - **`X_test`, `y_test`**: 20% (for evaluating performance)  
+  - **`random_state=42`** ensures reproducibility of the split.
+
+---
+
+```python
+# 5. Fit Linear Regression
+model = LinearRegression()
+model.fit(X_train, y_train)
+```
+1. **`LinearRegression()`**  
+   Creates an instance of the linear model.  
+2. **`model.fit(X_train, y_train)`**  
+   Learns the regression coefficients (β) by minimizing squared error on the training data.
+
+---
+
+```python
+# 6. Predict & evaluate
+y_pred = model.predict(X_test)
+```
+- **`model.predict(X_test)`**  
+  Uses the trained model to predict `medv` for each row in the test set. Stored in `y_pred`.
+
+```python
+mse  = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2   = r2_score(y_test, y_pred)
+```
+- **`mean_squared_error(y_test, y_pred)`**  
+  Computes the average squared difference between actual and predicted values.  
+- **`np.sqrt(mse)`**  
+  Takes the square root of MSE to get RMSE, which is on the same scale as the target.  
+- **`r2_score(y_test, y_pred)`**  
+  Measures the proportion of variance in `y_test` explained by the model (1.0 is perfect, 0.0 means no predictive power).
+
+```python
+print(f"Test RMSE: {rmse:.2f}")
+print(f"Test R²:   {r2:.2f}")
+```
+- Nicely prints the RMSE and R² with two decimal places.
+
+---
+
+```python
+# 7. (Optional) Feature coefficients
+coef_df = pd.DataFrame({
+    'feature': X.columns,
+    'coefficient': model.coef_
+}).sort_values('coefficient', ascending=False)
+```
+1. **`model.coef_`**  
+   The learned slope for each feature—how much `medv` changes per unit change in that feature, holding others constant.  
+2. Construct a DataFrame `coef_df` with:
+   - **`feature`**: feature names from `X.columns`  
+   - **`coefficient`**: the corresponding learned β values  
+3. **`.sort_values(..., ascending=False)`**  
+   Orders features by their coefficient from largest (strongest positive effect) down to smallest (strongest negative effect).
+
+```python
+print("\nFeature coefficients:")
+print(coef_df)
+```
+- Prints a header and then the sorted coefficients table so you can see which variables most strongly drive housing prices.

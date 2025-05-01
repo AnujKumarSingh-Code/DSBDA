@@ -1,0 +1,240 @@
+https://colab.research.google.com/drive/1rPpdovUT7objlnUtcbHel8o6lLKRQoBA?usp=sharing
+
+#sample text
+
+sample_text = "The quick brown fox jumps over the lazy dog. Dogs are not lazy by nature"
+
+# import nltk with important download
+import nltk
+import pandas as pd
+nltk.download('punkt')
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('averaged_perceptron_tagger_eng')
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+from nltk import pos_tag
+
+# tokenization
+
+
+tokens = word_tokenize(sample_text)
+print("Tokens: " , tokens)
+#pos tagging
+
+pos_tags = pos_tag(tokens)
+print("\nPOS Tags: ", pos_tags)
+
+
+#Remove stopwords
+
+stop_words = set(stopwords.words('english'))
+filtered_tokens = [word for word in tokens if word.lower() not in stop_words]
+print("\n Filtered tokens (StopWords Removed): ", filtered_tokens)
+
+#stemming
+
+stemmer = PorterStemmer()
+stemmed_tokens  = [stemmer.stem(word) for word in filtered_tokens]
+print("\nStemmed tokens:",stemmed_tokens)
+
+#lemmatization
+
+lemmatizer = WordNetLemmatizer()
+lemmatized_tokens = [lemmatizer.lemmatize(word) for word in filtered_tokens]
+print("\nLemmatized tokens: ", lemmatized_tokens)
+
+# term frequency and inverse document frequency(IDF)
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+# sample corpus(multiple document)
+
+corpus = [
+    "The quick brown fox.",
+    "The lazy dog sleeps.",
+    "Dogs and foxes are animals."
+]
+
+# TF-IDF Vecotorizer
+vectorizer = TfidfVectorizer()
+
+#fit and transform the corpus
+
+tfidf_matrix = vectorizer.fit_transform(corpus)
+
+# convert the tf-idf matrix to a readable format
+
+feature_names = vectorizer.get_feature_names_out()
+dense  = tfidf_matrix.todense()
+df_tfidf = pd.DataFrame(dense,columns = feature_names)
+
+print("\n TF-IDF Matrix:")
+print(df_tfidf)
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+Certainly! Here's a **line-by-line explanation** of your code, broken down into **logical sections**, so you can understand how each NLP (Natural Language Processing) technique is applied using `nltk` and `scikit-learn`.
+
+---
+
+## 🧪 Sample Text
+```python
+sample_text = "The quick brown fox jumps over the lazy dog. Dogs are not lazy by nature"
+```
+- A simple sentence used for demonstration. This is your **input text**.
+
+---
+
+## 📥 Import Libraries and Download Resources
+```python
+import nltk
+import pandas as pd
+nltk.download('punkt')
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('averaged_perceptron_tagger_eng')
+nltk.download('stopwords')
+nltk.download('wordnet')
+```
+- `nltk` is the **Natural Language Toolkit** used for processing human language data.
+- `pandas` is used later to display the TF-IDF matrix in a tabular format.
+- `nltk.download(...)`: Downloads required datasets for:
+  - **Tokenization** (`punkt`)
+  - **POS tagging** (`averaged_perceptron_tagger`)
+  - **Stop words**
+  - **WordNet** for lemmatization
+
+> 🔸 Note: `punkt_tab` and `averaged_perceptron_tagger_eng` are not valid in current versions of NLTK. You can safely remove those lines.
+
+---
+
+## 🔪 Tokenization
+```python
+from nltk.tokenize import word_tokenize
+tokens = word_tokenize(sample_text)
+print("Tokens: ", tokens)
+```
+- **Tokenization** splits text into **individual words** or tokens.
+- Output:  
+  ```
+  ['The', 'quick', 'brown', 'fox', 'jumps', 'over', 'the', 'lazy', 'dog', '.', 'Dogs', 'are', 'not', 'lazy', 'by', 'nature']
+  ```
+
+---
+
+## 🏷️ Part-of-Speech Tagging
+```python
+from nltk import pos_tag
+pos_tags = pos_tag(tokens)
+print("\nPOS Tags: ", pos_tags)
+```
+- Assigns **grammatical labels** to each token (e.g., noun, verb, adjective).
+- Example output:
+  ```
+  [('The', 'DT'), ('quick', 'JJ'), ('brown', 'JJ'), ('fox', 'NN'), ('jumps', 'VBZ'), ...]
+  ```
+
+---
+
+## ✂️ Removing Stopwords
+```python
+from nltk.corpus import stopwords
+stop_words = set(stopwords.words('english'))
+filtered_tokens = [word for word in tokens if word.lower() not in stop_words]
+print("\nFiltered tokens (StopWords Removed): ", filtered_tokens)
+```
+- **Stopwords** are common words (e.g., "the", "is", "are") that are often removed from text analysis.
+- This filters the tokens, removing words found in the `stopwords` list.
+
+---
+
+## 🌱 Stemming
+```python
+from nltk.stem import PorterStemmer
+stemmer = PorterStemmer()
+stemmed_tokens  = [stemmer.stem(word) for word in filtered_tokens]
+print("\nStemmed tokens:", stemmed_tokens)
+```
+- **Stemming** reduces words to their **root form** (e.g., “jumps” → “jump”).
+- `PorterStemmer` is a rule-based stemmer.
+
+---
+
+## 🌳 Lemmatization
+```python
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+lemmatized_tokens = [lemmatizer.lemmatize(word) for word in filtered_tokens]
+print("\nLemmatized tokens: ", lemmatized_tokens)
+```
+- **Lemmatization** also reduces words to their base form but uses **vocabulary and grammar** (e.g., “dogs” → “dog”).
+- It’s more accurate than stemming but requires correct POS tagging for best results.
+
+---
+
+## 📈 TF-IDF (Term Frequency – Inverse Document Frequency)
+### Setup Sample Corpus
+```python
+corpus = [
+    "The quick brown fox.",
+    "The lazy dog sleeps.",
+    "Dogs and foxes are animals."
+]
+```
+- A **corpus** is a collection of documents (in this case, 3 sentences).
+
+### Initialize Vectorizer and Transform Text
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(corpus)
+```
+- `TfidfVectorizer()` calculates:
+  - **TF**: Term Frequency (how often a word appears in a document)
+  - **IDF**: Inverse Document Frequency (how unique a word is across all documents)
+- `fit_transform()` learns the vocabulary and computes the matrix.
+
+### Convert TF-IDF Matrix to DataFrame
+```python
+feature_names = vectorizer.get_feature_names_out()
+dense  = tfidf_matrix.todense()
+df_tfidf = pd.DataFrame(dense, columns=feature_names)
+```
+- Converts the sparse matrix to a readable **pandas DataFrame** for visualization.
+
+### Print TF-IDF Matrix
+```python
+print("\nTF-IDF Matrix:")
+print(df_tfidf)
+```
+- Displays the weights for each word in each document.
+- Higher TF-IDF values mean the word is **important in that specific document** and **rare in others**.
+
+---
+
+## ✅ Summary
+| Step | Purpose |
+|------|---------|
+| Tokenization | Split text into individual words |
+| POS Tagging | Assign grammatical labels |
+| Stopword Removal | Remove common, less meaningful words |
+| Stemming | Crude reduction to root form |
+| Lemmatization | Accurate reduction to base form |
+| TF-IDF | Score how important words are across documents |
+
+---
+
+Would you like me to visualize the TF-IDF matrix using a heatmap or explain cosine similarity next?
